@@ -1,0 +1,197 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rhitam International Bank</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .hero-bg {
+      background: linear-gradient(rgba(0,0,50,0.7), rgba(0,0,100,0.7)), url('https://images.unsplash.com/photo-1521791136064-7986c2920216?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80') center/cover no-repeat;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans leading-relaxed">
+
+<nav class="bg-blue-900 p-5 shadow-lg">
+  <div class="container mx-auto flex justify-between items-center">
+    <h1 class="text-white text-3xl font-extrabold tracking-wide">International Bank</h1>
+    <div class="space-x-4">
+      <button onclick="showPage('home')" class="text-white hover:text-blue-300">Home</button>
+      <button onclick="showPage('create')" class="text-white hover:text-blue-300">Create Account</button>
+      <button onclick="showPage('deposit')" class="text-white hover:text-blue-300">Deposit</button>
+      <button onclick="showPage('withdraw')" class="text-white hover:text-blue-300">Withdraw</button>
+      <button onclick="showPage('balance')" class="text-white hover:text-blue-300">Check Balance</button>
+    </div>
+  </div>
+</nav>
+
+<div id="pages" class="container mx-auto px-6 py-12">
+
+  <div id="home" class="page">
+    <section class="hero-bg text-center py-32 text-white rounded-lg">
+      <h2 class="text-5xl font-extrabold mb-6">Your Global Financial Partner</h2>
+      <p class="text-2xl mb-10">Secure. Reliable. At Your Fingertips.</p>
+      <button onclick="exportToExcel()" class="mt-8 bg-yellow-500 text-white px-6 py-3 rounded-full hover:bg-yellow-600">
+        📥 Export Accounts to Excel
+      </button>
+    </section>
+  </div>
+
+  <div id="create" class="page hidden">
+    <h2 class="text-3xl font-bold mb-6">Create New Account</h2>
+    <input type="text" id="newName" placeholder="Enter Name" class="border p-3 rounded w-full mb-4">
+    <input type="email" id="newEmail" placeholder="Enter Email" class="border p-3 rounded w-full mb-4">
+    <input type="number" id="newBalance" placeholder="Initial Deposit" class="border p-3 rounded w-full mb-4">
+    <button onclick="createAccount()" class="bg-green-500 text-white px-6 py-3 rounded-full hover:bg-green-600">Create Account</button>
+    <div id="createResult" class="mt-6 text-xl font-semibold text-green-700"></div>
+  </div>
+
+  <div id="deposit" class="page hidden">
+    <h2 class="text-3xl font-bold mb-6">Deposit Money</h2>
+    <input type="number" id="depositAcc" placeholder="Account Number" class="border p-3 rounded w-full mb-4">
+    <input type="number" id="depositAmt" placeholder="Amount to Deposit" class="border p-3 rounded w-full mb-4">
+    <button onclick="depositMoney()" class="bg-blue-500 text-white px-6 py-3 rounded-full hover:bg-blue-600">Deposit</button>
+    <div id="depositResult" class="mt-6 text-lg font-semibold"></div>
+  </div>
+
+  <div id="withdraw" class="page hidden">
+    <h2 class="text-3xl font-bold mb-6">Withdraw Money</h2>
+    <input type="number" id="withdrawAcc" placeholder="Account Number" class="border p-3 rounded w-full mb-4">
+    <input type="number" id="withdrawAmt" placeholder="Amount to Withdraw" class="border p-3 rounded w-full mb-4">
+    <button onclick="withdrawMoney()" class="bg-red-500 text-white px-6 py-3 rounded-full hover:bg-red-600">Withdraw</button>
+    <div id="withdrawResult" class="mt-6 text-lg font-semibold"></div>
+  </div>
+
+  <div id="balance" class="page hidden">
+    <h2 class="text-3xl font-bold mb-6">Check Account Balance</h2>
+    <input type="number" id="balanceAcc" placeholder="Account Number" class="border p-3 rounded w-full mb-4">
+    <button onclick="checkBalance()" class="bg-purple-500 text-white px-6 py-3 rounded-full hover:bg-purple-600">Check Balance</button>
+    <div id="balanceResult" class="mt-6 text-xl font-semibold"></div>
+  </div>
+
+</div>
+
+<footer class="bg-blue-900 text-white text-center py-8 mt-20">
+  <p class="text-lg">&copy; 2025 Rhitam International Bank. All rights reserved. Designed with passion.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+  const pages = document.querySelectorAll('.page');
+  let accounts = [];
+
+  function showPage(pageId) {
+    pages.forEach(page => page.classList.add('hidden'));
+    document.getElementById(pageId).classList.remove('hidden');
+  }
+
+  function generateAccountNumber() {
+    let number = '';
+    for (let i = 0; i < 16; i++) {
+      number += Math.floor(Math.random() * 10);
+    }
+    return number;
+  }
+
+  function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  }
+
+  function createAccount() {
+    const name = document.getElementById('newName').value.trim();
+    const email = document.getElementById('newEmail').value.trim();
+    const balance = parseFloat(document.getElementById('newBalance').value);
+
+    if (!name || !email || isNaN(balance) || balance < 0) {
+      document.getElementById('createResult').innerText = 'Invalid input. Please fill all fields correctly.';
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      document.getElementById('createResult').innerText = 'Invalid email address.';
+      return;
+    }
+
+    const accountNumber = generateAccountNumber();
+    accounts.push({ accountNumber, name, email, balance });
+
+    document.getElementById('createResult').innerHTML = `
+      ✅ Account Created Successfully!<br>
+      📄 Name: <strong>${name}</strong><br>
+      📧 Email: <strong>${email}</strong><br>
+      🔢 Account Number: <strong>${accountNumber}</strong>
+    `;
+    document.getElementById('newName').value = '';
+    document.getElementById('newEmail').value = '';
+    document.getElementById('newBalance').value = '';
+
+    setTimeout(() => {
+      document.getElementById('createResult').innerHTML = '';
+    }, 5000);
+  }
+
+  function depositMoney() {
+    const accNum = document.getElementById('depositAcc').value;
+    const amount = parseFloat(document.getElementById('depositAmt').value);
+
+    const acc = accounts.find(a => a.accountNumber === accNum);
+    if (acc && amount > 0) {
+      acc.balance += amount;
+      document.getElementById('depositResult').innerText = `✅ Deposit successful. New Balance: $${acc.balance.toFixed(2)}`;
+    } else {
+      document.getElementById('depositResult').innerText = 'Invalid account or amount.';
+    }
+  }
+
+  function withdrawMoney() {
+    const accNum = document.getElementById('withdrawAcc').value;
+    const amount = parseFloat(document.getElementById('withdrawAmt').value);
+
+    const acc = accounts.find(a => a.accountNumber === accNum);
+    if (acc && amount > 0 && acc.balance >= amount) {
+      acc.balance -= amount;
+      document.getElementById('withdrawResult').innerText = `✅ Withdrawal successful. New Balance: $${acc.balance.toFixed(2)}`;
+    } else {
+      document.getElementById('withdrawResult').innerText = 'Invalid operation or insufficient balance.';
+    }
+  }
+
+  function checkBalance() {
+    const accNum = document.getElementById('balanceAcc').value;
+    const acc = accounts.find(a => a.accountNumber === accNum);
+
+    if (acc) {
+      document.getElementById('balanceResult').innerHTML = `📄 Account Holder: <strong>${acc.name}</strong><br>💵 Balance: <strong>$${acc.balance.toFixed(2)}</strong>`;
+    } else {
+      document.getElementById('balanceResult').innerText = 'Account not found.';
+    }
+  }
+
+  function exportToExcel() {
+    if (accounts.length === 0) {
+      alert("No accounts to export!");
+      return;
+    }
+
+    const wsData = [
+      ["Account Number", "Name", "Email", "Balance"]
+    ];
+
+    accounts.forEach(acc => {
+      wsData.push([acc.accountNumber, acc.name, acc.email, acc.balance]);
+    });
+
+    const worksheet = XLSX.utils.aoa_to_sheet(wsData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Accounts");
+
+    XLSX.writeFile(workbook, "accounts.xlsx");
+  }
+</script>
+
+</body>
+</html>
